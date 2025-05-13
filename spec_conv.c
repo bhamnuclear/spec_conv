@@ -17,6 +17,7 @@
 #define CHLEN     120   /*character length of filename arrays*/
                             
 /* Carl Wheldon May 2003 */
+/* Lastest up-date May 2025*/
 
 /* To compile:
 gcc spec_conv.c -Wall -pedantic -o spec_conv -lm -O2
