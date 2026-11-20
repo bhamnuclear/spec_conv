@@ -662,15 +662,15 @@ void chan_num_ext(char fin[], char fout[], int *numch, char ext[])
     /*if it is an xtrack spectrum, construct new file extension*/
     i = 0;
     itoa(*numch, buf);
-    strncpy(ans+i++, "_", 1);
-    strncpy(ans+i++, buf, 1);
-    if (*numch >= 10000) strncpy(ans+i++, buf+1, 1 );
-    if (*numch < 1000)
+    if(strlen(ans)-i > 1) memcpy(ans+i++, "_", 1);
+    if(strlen(ans)-i > 1) memcpy(ans+i++, buf, 1);
+    if (*numch >= 10000 && strlen(ans)-i > 1) memcpy(ans+i++, buf+1, 1 );
+    if (*numch < 1000 && strlen(ans)-i > 2)
     {
-    	strncpy(ans+i++, buf+1, 1 );
-	strncpy(ans+i++, buf+2, 1 );
+    	memcpy(ans+i++, buf+1, 1 );
+	memcpy(ans+i++, buf+2, 1 );
     }
-    else strncpy(ans+i++, "k", 1 );
+    else if(strlen(ans)-i > 1) memcpy(ans+i++, "k", 1 );
     strcpy(ans+i++, ext );
     strcpy( strrchr(fout, '.'), ans );
     return ;
@@ -780,7 +780,7 @@ long convert_bytes(char name[])
 {
     float sz;
     int i;
-    char bye[4][2];
+    char bye[4][3];
     struct stat stbuf;
     
     for (i = 0; i < 3; i++)
@@ -789,9 +789,9 @@ long convert_bytes(char name[])
 	bye[i][1] = (char)0;
     }
     strncpy(bye[0],"b",2);
-    strncpy(bye[1],"Kb",2);
-    strncpy(bye[2],"Mb",2);
-    strncpy(bye[3],"Gb",2);
+    strncpy(bye[1],"Kb",3);
+    strncpy(bye[2],"Mb",3);
+    strncpy(bye[3],"Gb",3);
     
     stat(name, &stbuf);
     sz = (float)stbuf.st_size;
@@ -1351,10 +1351,10 @@ int maestro_read(char name[])
     
     /*print real and live times to screen and convert from 20ms units to sec*/
     /*Copy day and month*/
-    strncpy(dt, maest_header.dt, 5);
+    memcpy(dt, maest_header.dt, 5);
     /*check year, if maest_header.dt[7] == 1 year is 2000+YY else 1900+YY*/
-    if (maest_header.dt[7] == '1') strncpy(dt+5, "20", 2);
-    else strncpy(dt+5, "19", 2);
+    if (maest_header.dt[7] == '1') memcpy(dt+5, "20", 2);
+    else memcpy(dt+5, "19", 2);
     strncpy(dt+7, maest_header.dt+5, 2);
     dt[9] = '\0';
     printf("Spectrum info: %s at %c%c:%s\n"
@@ -1381,17 +1381,17 @@ void num_fname(char name[], int num)
     char ans[MXNUMDIG+1] = "", buf[MXNUMDIG+3] = "";
     
     len = strlen(name);
-    strncpy(buf+i++, "_", 1);
+    if (strlen(buf)-i > 1) memcpy(buf+i++, "_", 1);
     itoa(num, ans);
     
     /*add zeroes to pad out file name if num is less than the maximum
         number of digits*/
     for (j = 0; j < (MXNUMDIG - (int)strlen(ans)); j++)
-        strncpy(buf+i++, "0", 1);
+        memcpy(buf+i++, "0", 1);
     
-    strncpy(buf+i, ans, (int)strlen(ans));
+    strncpy(buf+i, ans, (int)(MXNUMDIG+3-i-strlen(ans)));
     i += (int)strlen(ans);
-    strncpy(buf+i++, ".", 1);
+    memcpy(buf+i++, ".", 1);
     buf[i] = '\0';
     if ( (strrchr(name,'.')) )
 	strncpy( (strrchr(name,'.')), buf, i);
@@ -1508,7 +1508,7 @@ void rad_write(char name[], int numch)
     /*length without ext.*/
     j = strrchr(name,'.') - &name[0];
     /*copy max. 8 bytes to radheader.name*/
-    strncpy(radheader.name, name, 8);
+    memcpy(radheader.name, name, 8);
     /*set any extra characters so spaces*/
     if (j < 8) memset(&radheader.name[j], ' ', 8-j);
     
@@ -1634,7 +1634,7 @@ void set_ext(char name[], char ext[])
 {    
     /*if not equal to NULL, find '.' then copy ext with +1 for term char*/
     if ( (strrchr(name,'.')) )
-        strncpy( (strrchr(name,'.')), ext, (int)(strlen(ext)+1) );
+        strncpy( (strrchr(name,'.')), ext, (int)(CHLEN-(int)(strrchr(name,'.')-name)-1) );
     /*if equal to NULL just add ext to the end*/
     else strcat( name, ext );
 } /*END set_ext()*/
